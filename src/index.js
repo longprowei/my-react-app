@@ -56,6 +56,17 @@ class Game extends React.Component {
     }
   }
 
+  classMark() {
+    const items = document.querySelectorAll('.game-info ol li');
+    for(let item of items) {
+      item.classList.remove('current-item');
+    }
+  }
+  markCurrentItem(step) {
+    const currentItem = document.querySelector(`.game-info ol li:nth-child(${step + 1})`);
+    currentItem.classList.add('current-item');
+  }
+
   handleClick(i) {
     const history = this.state.history.slice(0, this.state.stepNumber + 1);
     const current = history[history.length - 1];
@@ -72,6 +83,7 @@ class Game extends React.Component {
     }
 
     squares[i] = this.state.xIsNext ? 'X' : 'O';
+    this.classMark();
     this.setState({
       history: history.concat({
         squares: squares,
@@ -87,6 +99,8 @@ class Game extends React.Component {
       stepNumber: step,
       xIsNext: (step % 2) === 0,
     });
+    this.classMark();
+    this.markCurrentItem(step);
   }
 
   render() {
@@ -96,10 +110,10 @@ class Game extends React.Component {
 
     const moves = history.map((step, move) => {
       const desc = move ?
-        'Go to move #' + move + `(${this.state.location[move - 1].col}, ${this.state.location[move - 1].row})`:
+        'Go to move #' + move + ` (${this.state.location[move - 1].col}, ${this.state.location[move - 1].row})`:
         'Go to start';
       return (
-        <li key={move}>
+        <li key={move} className={move === history.length - 1 ? 'current-item': ''}>
           <button onClick={() => this.jumpTo(move)}>{desc}</button>
         </li>
       );

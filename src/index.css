@@ -48,3 +48,11 @@ ol, ul {
 .game-info {
   margin-left: 20px;
 }
+
+.current-item {
+  font-weight: bold;
+}
+
+.current-item button {
+  font-weight: bold;
+}
