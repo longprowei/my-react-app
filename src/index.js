@@ -3,8 +3,9 @@ import ReactDOM from 'react-dom';
 import './index.css';
 
 function Square(props) {
+  const className = "square " + props.class;
   return (
-    <button className="square" onClick={props.onClick}>
+    <button className={className} onClick={props.onClick}>
       {props.value}
     </button>
   );
@@ -14,6 +15,7 @@ class Board extends React.Component {
   renderSquare(i) {
     return (
       <Square
+        class={this.props.line ? (this.props.line.includes(i) ? 'highlight' : '') : ''}
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
       />
@@ -61,6 +63,7 @@ class Game extends React.Component {
       item.classList.remove('current-item');
     }
   }
+
   markCurrentItem(step) {
     const currentItem = document.querySelector(`.game-info ol li:nth-child(${step + 1})`);
     currentItem.classList.add('current-item');
@@ -105,21 +108,22 @@ class Game extends React.Component {
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
-    const winner = calculateWinner(current.squares);
+    const winnerObj = calculateWinner(current.squares);
 
     const moves = history.map((step, move) => {
       const desc = move ?
         'Go to move #' + move + ` (${this.state.location[move - 1].col}, ${this.state.location[move - 1].row})`:
         'Go to start';
       return (
-        <li key={move} className={move === history.length - 1 ? 'current-item': ''}>
+        <li key={move} className={move === history.length - 1 ? 'current-item' : ''}>
           <button onClick={() => this.jumpTo(move)}>{desc}</button>
         </li>
       );
     });
     
     let status;
-    if (winner) {
+    if (winnerObj) {
+      const winner = winnerObj.winner;
       status = 'Winner: ' + winner;
     } else {
       status = 'Next Player: ' + (this.state.xIsNext ? 'X' : 'O');
@@ -129,6 +133,7 @@ class Game extends React.Component {
       <div className="game">
         <div className="game-board">
           <Board
+            line={winnerObj ? winnerObj.line : null}
             squares={current.squares}
             onClick={(i) => this.handleClick(i)}
           />
@@ -162,7 +167,10 @@ function calculateWinner(squares) {
   for (let i = 0; i < lines.length; i++) {
     const [a, b, c] = lines[i];
     if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
+      return {
+        winner: squares[a],
+        line: [a, b, c],
+      }
     }
   }
   return null;
