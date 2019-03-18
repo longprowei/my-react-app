@@ -15,6 +15,7 @@ class Board extends React.Component {
   renderSquare(i) {
     return (
       <Square
+        key={i}
         class={this.props.line ? (this.props.line.includes(i) ? 'highlight' : '') : ''}
         value={this.props.squares[i]}
         onClick={() => this.props.onClick(i)}
@@ -31,7 +32,7 @@ class Board extends React.Component {
         rows.push(this.renderSquare(i * 3 + j));
       }
       squares.push((
-        <div className="board-row">
+        <div key={i} className="board-row">
           {rows}
         </div>
       ));
@@ -51,6 +52,7 @@ class Game extends React.Component {
       history: [{
         squares: Array(9).fill(null),
       }],
+      ascending: true,
       stepNumber: 0,
       xIsNext: true,
       location: Array(9).fill(null),
@@ -58,14 +60,14 @@ class Game extends React.Component {
   }
 
   classMark() {
-    const items = document.querySelectorAll('.game-info ol li');
+    const items = document.querySelectorAll('.game-info ul li');
     for(let item of items) {
       item.classList.remove('current-item');
     }
   }
 
   markCurrentItem(step) {
-    const currentItem = document.querySelector(`.game-info ol li:nth-child(${step + 1})`);
+    const currentItem = document.querySelector(`.game-info ul li:nth-child(${step + 1})`);
     currentItem.classList.add('current-item');
   }
 
@@ -105,12 +107,22 @@ class Game extends React.Component {
     this.markCurrentItem(step);
   }
 
+  handleClickOrderBtn() {
+    this.setState({
+      ascending: !this.state.ascending,
+    })
+  }
+
   render() {
     const history = this.state.history;
     const current = history[this.state.stepNumber];
     const winnerObj = calculateWinner(current.squares);
 
-    const moves = history.map((step, move) => {
+    let newHistory = this.state.ascending ? history.slice() : history.slice().reverse();
+    const moves = newHistory.map((step, move) => {
+      if (!this.state.ascending) {
+        move = newHistory.length - 1 - move;
+      }
       const desc = move ?
         'Go to move #' + move + ` (${this.state.location[move - 1].col}, ${this.state.location[move - 1].row})`:
         'Go to start';
@@ -131,6 +143,8 @@ class Game extends React.Component {
       status = 'The result is draw';
     }
 
+    const orderBtnText = this.state.ascending ? 'Decending' : 'Ascending'; 
+
     return (
       <div className="game">
         <div className="game-board">
@@ -141,8 +155,9 @@ class Game extends React.Component {
           />
         </div>
         <div className="game-info">
+          <button onClick={() => this.handleClickOrderBtn()}>{orderBtnText}</button>
           <div>{status}</div>
-          <ol>{moves}</ol>
+          <ul>{moves}</ul>
         </div>
       </div>
     );
